@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时述智能 | 入镜 inshot - AI制片平台</title>
+    <meta name="description" content="时述智能-入镜inshot，面向短剧集与长篇视频内容生产的AI制片平台，定义下一代影视内容生产方式">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #E85A4F;
+            --primary-dark: #c9483f;
+            --dark: #0d0d1a;
+            --darker: #060610;
+            --light: #f8f9fa;
+            --gray: #8a8a9a;
+            --accent: #4a90d9;
+            --accent-light: #6ba8eb;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            line-height: 1.7;
+            color: var(--light);
+            background: var(--darker);
+            overflow-x: hidden;
+        }
+        
+        /* 动画背景 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker);
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at 20% 80%, rgba(232, 90, 79, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(74, 144, 217, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(5deg); }
+            66% { transform: translate(-20px, 20px) rotate(-5deg); }
+        }
+        
+        /* 导航 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(13, 13, 26, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .logo span {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--gray);
+            font-weight: 500;
+            transition: color 0.3s;
+            font-size: 15px;
+        }
+        
+        .nav-links a:hover {
+            color: white;
+        }
+        
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 140px 40px 100px;
+            position: relative;
+        }
+        
+        .hero-content {
+            max-width: 900px;
+            position: relative;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(232, 90, 79, 0.15);
+            border: 1px solid rgba(232, 90, 79, 0.3);
+            border-radius: 50px;
+            font-size: 14px;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+        
+        .hero h1 {
+            font-size: 72px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            letter-spacing: -2px;
+            line-height: 1.1;
+        }
+        
+        .hero h1 .highlight {
+            background: linear-gradient(90deg, var(--primary), #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero .tagline {
+            font-size: 28px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 16px;
+            font-weight: 300;
+        }
+        
+        .hero .desc {
+            font-size: 18px;
+            color: var(--gray);
+            margin-bottom: 50px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.8;
+        }
+        
+        .cta-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .cta-btn {
+            display: inline-block;
+            padding: 18px 45px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(232,90,79,0.3);
+        }
+        
+        .cta-btn-outline {
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .cta-btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.4);
+            box-shadow: none;
+        }
+        
+        /* 数据统计 */
+        .stats-bar {
+            margin-top: 80px;
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(90deg, white, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        /* Section */
+        section {
+            padding: 120px 60px;
+            position: relative;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: 48px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            color: var(--gray);
+            font-size: 20px;
+            margin-bottom: 80px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* 时代变革 */
+        #revolution {
+            background: linear-gradient(180deg, var(--darker) 0%, var(--dark) 100%);
+        }
+        
+        .revolution-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+        
+        .revolution-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .revolution-card:hover {
+            background: rgba(255,255,255,0.05);
+            transform: translateY(-5px);
+        }
+        
+        .revolution-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .revolution-card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: white;
+        }
+        
+        .revolution-card p {
+            color: var(--gray);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* 产品 */
+        #product {
+            background: var(--dark);
+        }
+        
+        .product-hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .product-name {
+            font-size: 64px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, var(--primary), #f093fb, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .product-tagline {
+            font-size: 24px;
+            color: var(--gray);
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background: rgba(255,255,255,0.02);
+            padding: 45px 35px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(232, 90, 79, 0.3);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 25px;
+        }
+        
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: white;
+        }
+        
+        .feature-card p {
+            color: var(--gray);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+        
+        /* 成本对比 */
+        .cost-comparison {
+            margin-top: 80px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 24px;
+            padding: 60px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .cost-title {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 50px;
+        }
+        
+        .cost-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+        
+        .cost-box {
+            text-align: center;
+            padding: 40px;
+            border-radius: 16px;
+        }
+        
+        .cost-box.traditional {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .cost-box.ai {
+            background: linear-gradient(135deg, rgba(232,90,79,0.1), rgba(74,144,217,0.1));
+            border: 1px solid rgba(232,90,79,0.3);
+        }
+        
+        .cost-label {
+            font-size: 18px;
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+        
+        .cost-price {
+            font-size: 48px;
+            font-weight: 800;
+        }
+        
+        .cost-box.traditional .cost-price {
+            color: var(--gray);
+        }
+        
+        .cost-box.ai .cost-price {
+            color: var(--primary);
+        }
+        
+        .cost-unit {
+            font-size: 16px;
+            color: var(--gray);
+            margin-top: 10px;
+        }
+        
+        .cost-saving {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 24px;
+            color: var(--primary);
+        }
+        
+        /* 团队 */
+        #team {
+            background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%);
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+        }
+        
+        .team-card {
+            background: rgba(255,255,255,0.02);
+            border-radius: 24px;
+            padding: 50px 40px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            gap: 30px;
+            transition: all 0.3s;
+        }
+        
+        .team-card:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(232, 90, 79, 0.2);
+        }
+        
+        .team-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+        
+        .team-info h3 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: white;
+        }
+        
+        .team-info .role {
+            color: var(--primary);
+            font-size: 16px;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+        
+        .team-info .bio {
+            color: var(--gray);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        
+        /* 融资 */
+        #funding {
+            background: var(--darker);
+        }
+        
+        .funding-box {
+            background: linear-gradient(135deg, rgba(232,90,79,0.05), rgba(74,144,217,0.05));
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 60px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .funding-amount {
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .funding-label {
+            font-size: 18px;
+            color: var(--gray);
+            margin-bottom: 40px;
+        }
+        
+        .funding-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .funding-item {
+            text-align: center;
+        }
+        
+        .funding-item .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }
+        
+        .funding-item .label {
+            font-size: 14px;
+            color: var(--gray);
+        }
+        
+        /* 联系 */
+        #contact {
+            background: linear-gradient(180deg, var(--darker) 0%, #0a0a15 100%);
+            text-align: center;
+        }
+        
+        .contact-box {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .contact-info {
+            margin-top: 50px;
+        }
+        
+        .contact-item {
+            margin-bottom: 24px;
+            font-size: 18px;
+        }
+        
+        .contact-item span {
+            color: var(--gray);
+            margin-right: 10px;
+        }
+        
+        /* Footer */
+        footer {
+            background: #050508;
+            padding: 60px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .footer-logo span {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .footer-text {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .footer-text a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-text a:hover {
+            color: var(--primary);
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            nav {
+                padding: 15px 20px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 40px;
+            }
+            
+            .hero .tagline {
+                font-size: 18px;
+            }
+            
+            .revolution-grid,
+            .feature-grid,
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                gap: 30px;
+            }
+            
+            .stat-number {
+                font-size: 36px;
+            }
+            
+            .cost-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            section {
+                padding: 80px 20px;
+            }
+            
+            .section-title {
+                font-size: 32px;
+            }
+            
+            .funding-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .team-card {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">
+            <div class="logo-icon">✦</div>
+            入镜<span>inshot</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#revolution">时代变革</a></li>
+            <li><a href="#product">产品</a></li>
+            <li><a href="#team">团队</a></li>
+            <li><a href="/ceo.html">创始人</a></li>
+            <li><a href="/company.html">企业文化</a></li>
+            <li><a href="/contact-ceo.html">联系CEO</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">AI时代的影视工业化变革者</div>
+            <h1>让好故事<br/><span class="highlight">开机</span></h1>
+            <p class="tagline">时述智能 · 入镜 inshot</p>
+            <p class="desc">面向短剧集与长篇视频内容生产的AI制片平台<br/>定义下一代影视内容生产方式</p>
+            <div class="cta-group">
+                <a href="#contact" class="cta-btn">联系我们</a>
+                <a href="#product" class="cta-btn cta-btn-outline">了解更多</a>
+            </div>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-number">100×</div>
+                    <div class="stat-label">成本降低</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">53×</div>
+                    <div class="stat-label">效率提升</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">6.6亿</div>
+                    <div class="stat-label">微短剧用户</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Revolution -->
+    <section id="revolution">
+        <div class="container">
+            <h2 class="section-title">影视工业化变革期已到来</h2>
+            <p class="section-subtitle">不是某个模型改变了影视，而是供给、效率、需求和创作主体同时变化</p>
+            
+            <div class="revolution-grid">
+                <div class="revolution-card">
+                    <div class="revolution-icon">💰</div>
+                    <h3>供给侧</h3>
+                    <p>成本降超百倍<br/>视频模型高频迭代<br/>能力持续刷新</p>
+                </div>
+                <div class="revolution-card">
+                    <div class="revolution-icon">⚡</div>
+                    <h3>效率侧</h3>
+                    <p>试错成本降低<br/>工业级别量产<br/>边际成本趋近于零</p>
+                </div>
+                <div class="revolution-card">
+                    <div class="revolution-icon">📈</div>
+                    <h3>需求侧</h3>
+                    <p>高频持续吞吐<br/>分众化订阅化<br/>用户规模6.6亿</p>
+                </div>
+                <div class="revolution-card">
+                    <div class="revolution-icon">👥</div>
+                    <h3>就业侧</h3>
+                    <p>创作权扩展<br/>人机协同创作<br/>就业岗位133万+</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Product -->
+    <section id="product">
+        <div class="container">
+            <div class="product-hero">
+                <div class="product-name">入镜 inshot</div>
+                <p class="product-tagline">AI制片平台 · 让好故事开机</p>
+            </div>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎬</div>
+                    <h3>智能制片</h3>
+                    <p>从剧本到成片，AI驱动的全流程制片工具，大幅降低制作门槛，让每个好故事都有机会被讲述</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>效率革命</h3>
+                    <p>制作周期从40工时降至0.75工时，提效53倍；边际成本从2000元降至5元，降低400倍</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>创作自由</h3>
+                    <p>打破资源限制，创作受限小，优质内容多元，让创意不再被成本束缚</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>工业化量产</h3>
+                    <p>标准化流程，可复制的生产模式，剧本-分镜-样片工作流可验证</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>敏捷迭代</h3>
+                    <p>低成本试错，快速验证，让创作更加灵活，适配高频持续的内容需求</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>多模态闭环</h3>
+                    <p>支持短剧、长篇视频、AI漫剧等多种内容形态，形成完整生产链路</p>
+                </div>
+            </div>
+            
+            <div class="cost-comparison">
+                <h3 class="cost-title">成本对比：每分钟制作成本</h3>
+                <div class="cost-grid">
+                    <div class="cost-box traditional">
+                        <div class="cost-label">传统精品短剧</div>
+                        <div class="cost-price">¥10,000+</div>
+                        <div class="cost-unit">约1-2万元/分钟</div>
+                    </div>
+                    <div class="cost-box ai">
+                        <div class="cost-label">AI制片</div>
+                        <div class="cost-price">¥100-1000</div>
+                        <div class="cost-unit">最低可至500元/分钟</div>
+                    </div>
+                </div>
+                <div class="cost-saving">成本降低 100倍以上</div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Team -->
+    <section id="team">
+        <div class="container">
+            <h2 class="section-title">核心团队</h2>
+            <p class="section-subtitle">内容老兵与技术大咖的跨界融合</p>
+            
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar">🦁</div>
+                    <div class="team-info">
+                        <h3>马睿</h3>
+                        <p class="role">Founder & CEO</p>
+                        <p class="bio">深耕影视与内容行业，深度理解商业逻辑与复杂制片结构。关爱八卦成长协会"会长"，新片场前副总裁/合伙人兼CMO，完整经历内容行业变迁。致力于用AI重构内容工业体系。</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">⚙️</div>
+                    <div class="team-info">
+                        <h3>徐明强 博士</h3>
+                        <p class="role">CTO</p>
+                        <p class="bio">前微软中国CTO，专注AI系统工程与云平台架构。构建底层多智能体系统与长期演进架构，为平台提供稳定高效的技术底座。</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">🚀</div>
+                    <div class="team-info">
+                        <h3>Alex</h3>
+                        <p class="role">VP of AI Engineering / Head of AI Systems</p>
+                        <p class="bio">微软全球资深AI架构师，OpenAI专家，影视行业AI技术指导。负责平台多视图架构与Agent协作产品化落地。</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">📝</div>
+                    <div class="team-info">
+                        <h3>万晨</h3>
+                        <p class="role">Chief Content Officer 首席内容官</p>
+                        <p class="bio">英国皇家电影学院NFTS剧作创作专业，前腾讯S级短剧制片人、导演。负责内容工业SOP、项目质量标准与内容生产体系。</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">🎭</div>
+                    <div class="team-info">
+                        <h3>柳若昕</h3>
+                        <p class="role">Chief Narrative Architect 首席叙事架构师</p>
+                        <p class="bio">中央戏剧学院/法国里昂二大双学位。负责将编剧经验与叙事判断转化为结构化内容规则，参与剧本算法标注、叙事方法论抽象与评估体系建立。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact -->
+    <section id="contact">
+        <div class="container">
+            <div class="contact-box">
+                <h2 class="section-title">联系我们</h2>
+                <p class="section-subtitle">期待与您合作，共同定义下一代影视内容生产方式</p>
+                
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <span>公司：</span>时述智能科技有限公司
+                    </div>
+                    <div class="contact-item">
+                        <span>品牌：</span>入镜 inshot
+                    </div>
+                    <div class="contact-item">
+                        <span>邮箱：</span>contact@rujing.net
+                    </div>
+                    <div class="contact-item">
+                        <span>地址：</span>北京市（筹备中）
+                    </div>
+                </div>
+                
+                <a href="mailto:contact@rujing.net" class="cta-btn" style="margin-top: 40px;">发送邮件</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">时述智能 · <span>ChronoSpeak</span></div>
+        <p class="footer-text">
+            <a href="/ceo.html">创始人</a> · 
+            <a href="/company.html">企业文化</a>
+        </p>
+        <p class="footer-text">© 2026 时述智能科技有限公司</p>
+        <p class="footer-text">让好故事开机 | 定义下一代影视内容生产方式</p>
+    </footer>
+    
+    <script>
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+        
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.style.background = 'rgba(13, 13, 26, 0.95)';
+            } else {
+                nav.style.background = 'rgba(13, 13, 26, 0.8)';
+            }
+        });
+    </script>
+</body>
+</html>
